@@ -9,10 +9,10 @@ project(i3g4250d_tests)
 
 add_compile_definitions(TEST)
 
-zephyr_library_include_directories(
-    ${ZEPHYR_BASE}/drivers/sensor/i3g4250d
-    ${ZEPHYR_BASE}/../modules/hal/st/sensor/stmemsc/i3g4250d_STdC/driver
-)
+#zephyr_library_include_directories(
+#    ${ZEPHYR_BASE}/drivers/sensor/i3g4250d
+#    ${ZEPHYR_BASE}/../modules/hal/st/sensor/stmemsc/i3g4250d_STdC/driver
+#)
 
 FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources} )

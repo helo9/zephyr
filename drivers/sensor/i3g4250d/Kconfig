@@ -1,6 +1,6 @@
 # I3G4250D three-axis digital output gyroscope
 
-# Copyright (c) 2016 Intel Corporation
+# Copyright (c) 2021 Jonathan Hahn
 # SPDX-License-Identifier: Apache-2.0
 
 menuconfig I3G4250D

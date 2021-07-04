@@ -7,6 +7,8 @@
 #ifndef ZEPHYR_DRIVERS_SENSOR_I3G4250D_I3G4250D_H_
 #define ZEPHYR_DRIVERS_SENSOR_I3G4250D_I3G4250D_H_
 
+#include <kernel.h>
+#include <device.h>
 #include <stdint.h>
 #include <drivers/spi.h>
 #include <drivers/gpio.h>
@@ -30,5 +32,7 @@ struct i3g4250d_data {
 	struct spi_cs_control cs_ctrl;
 #endif
 };
+
+int i3g4250d_spi_init(const struct device *dev);
 
 #endif /* __SENSOR_I3G4250D__ */
