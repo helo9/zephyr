@@ -102,22 +102,78 @@ static int i3g4250d_channel_get(const struct device *dev,
 	}
 }
 
+static i3g4250d_dr_t gyr_odr_to_reg(const struct sensor_value *val)
+{
+	double odr = sensor_value_to_double((struct sensor_value*)val);
+	i3g4250d_dr_t reg = I3G4250D_ODR_OFF;
+
+	if ((odr > 0.0) && (odr < 100.0)) {
+		reg = I3G4250D_ODR_SLEEP;
+	} else if ((odr >= 100.0) && (odr < 200.0)) {
+		reg = I3G4250D_ODR_100Hz;
+	} else if ((odr >= 200.0) && (odr < 400.0)) {
+		reg = I3G4250D_ODR_200Hz;
+	} else if ((odr >= 400.0) && (odr < 800.0)) {
+		reg = I3G4250D_ODR_400Hz;
+	} else if (odr >= 800.0) {
+		reg = I3G4250D_ODR_800Hz;
+	}
+
+	return reg;
+}
+
+static int i3g4250d_config_gyro(const struct device *dev,
+			   enum sensor_attribute attr,
+			   const struct sensor_value *val)
+{
+	struct i3g4250d_data *i3g4250d = dev->data;
+	i3g4250d_dr_t dr_reg;
+	switch (attr) {
+	case SENSOR_ATTR_SAMPLING_FREQUENCY:
+		dr_reg = gyr_odr_to_reg(val);
+		return i3g4250d_data_rate_set(i3g4250d->ctx, dr_reg);
+	default:
+		LOG_DBG("Gyro attribute not supported");
+		break;
+	}
+
+	return -ENOTSUP;
+}
+
+static int i3g4250d_attr_set(const struct device *dev, enum sensor_channel chan,
+			   enum sensor_attribute attr,
+			   const struct sensor_value *val)
+{
+	switch (chan) {
+	case SENSOR_CHAN_GYRO_X:
+	case SENSOR_CHAN_GYRO_Y:
+	case SENSOR_CHAN_GYRO_Z:
+	case SENSOR_CHAN_GYRO_XYZ:
+		return i3g4250d_config_gyro(dev, attr, val);
+	default:
+		LOG_DBG("attr_set() not supported on this channel %d.", chan);
+		break;
+	}
+
+	return -ENOTSUP;
+}
+
 static const struct sensor_driver_api i3g4250d_driver_api = {
-	//.attr_set = i3g4250d_attr_set, TODO?
+	.attr_set = i3g4250d_attr_set,
 	.sample_fetch = i3g4250d_sample_fetch,
 	.channel_get = i3g4250d_channel_get,
 };
 
 static int i3g4250d_init(const struct device *dev) {
 
-	struct i3g4250d_data *data = dev->data;
+	struct i3g4250d_data *i3g4250d = dev->data;
 	uint8_t wai;
 
 	if (i3g4250d_spi_init(dev)) {
 		return -EINVAL;
 	}
 
-	if (i3g4250d_device_id_get(data->ctx, &wai) < 0) {
+	if (i3g4250d_device_id_get(i3g4250d->ctx, &wai) < 0) {
 		return -EIO;
 	}
 	
@@ -127,11 +183,11 @@ static int i3g4250d_init(const struct device *dev) {
 	}
 
 	/* Configure filtering chain -  Gyroscope - High Pass */
-	i3g4250d_filter_path_set(data->ctx, I3G4250D_LPF1_HP_ON_OUT);
-	i3g4250d_hp_bandwidth_set(data->ctx, I3G4250D_HP_LEVEL_3);
+	i3g4250d_filter_path_set(i3g4250d->ctx, I3G4250D_LPF1_HP_ON_OUT);
+	i3g4250d_hp_bandwidth_set(i3g4250d->ctx, I3G4250D_HP_LEVEL_3);
 
 	/* Set Output data rate */
-	i3g4250d_data_rate_set(data->ctx, I3G4250D_ODR_100Hz);
+	i3g4250d_data_rate_set(i3g4250d->ctx, I3G4250D_ODR_100Hz);
 
 	return 0;
 }
