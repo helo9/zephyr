@@ -18,6 +18,8 @@
 
 #include "i3g4250d.h"
 
+#define RAW_TO_MICRODEGREEPERSEC 8750
+
 LOG_MODULE_REGISTER(i3g4250d, CONFIG_SENSOR_LOG_LEVEL);
 
 static int i3g4250d_sample_fetch(const struct device *dev,
@@ -48,8 +50,8 @@ static int i3g4250d_sample_fetch(const struct device *dev,
 }
 
 static inline void i3g4250d_convert(struct sensor_value *val, int16_t raw_value) {
-	val->val1 = raw_value / 1000;
-	val->val2 = (raw_value * 1000) % 1000000;
+	val->val1 = (int16_t)(raw_value * RAW_TO_MICRODEGREEPERSEC / 100000LL);
+	val->val2 = (int16_t)(raw_value * RAW_TO_MICRODEGREEPERSEC) % 1000000LL;
 }
 
 static void i3g4250d_channel_convert(enum sensor_channel chan,
