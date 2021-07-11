@@ -1,7 +1,11 @@
-/*
+/* ST Microelectronics I3G4250D gyro driver
+ *
  * Copyright (c) 2021 Jonathan Hahn
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Datasheet:
+ * https://www.st.com/resource/en/datasheet/i3g4250d.pdf
  */
 
 #define DT_DRV_COMPAT st_i3g4250d

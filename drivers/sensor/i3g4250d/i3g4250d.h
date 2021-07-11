@@ -1,14 +1,16 @@
-/*
+/* ST Microelectronics I3G4250D gyro driver
+ *
  * Copyright (c) 2021 Jonathan Hahn
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Datasheet:
+ * https://www.st.com/resource/en/datasheet/i3g4250d.pdf
  */
 
 #ifndef ZEPHYR_DRIVERS_SENSOR_I3G4250D_I3G4250D_H_
 #define ZEPHYR_DRIVERS_SENSOR_I3G4250D_I3G4250D_H_
 
-#include <kernel.h>
-#include <device.h>
 #include <stdint.h>
 #include <drivers/spi.h>
 #include <drivers/gpio.h>
