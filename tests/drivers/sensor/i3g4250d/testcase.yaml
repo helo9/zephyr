@@ -2,4 +2,6 @@ tests:
   driver.sensor.i3g4250d:
     extra_args: CONF_FILE=prj.conf
     tags: driver sensor subsys i3g4250d
-    platform_allow: native_posix
+    filter: dt_compat_enabled("st,i3g4250d")
+    integration_platforms: 
+      - stm32f3disco@E

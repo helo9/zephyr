@@ -2,10 +2,9 @@
 cmake_minimum_required(VERSION 3.13.1)
 
 set(BOARD stm32f3_disco@E)
-set(DTC_OVERLAY_FILE stm32f3disco.overlay)
 
-include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
-project(i3g4250d_tests)
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+project(device)
 
 add_compile_definitions(TEST)
 
