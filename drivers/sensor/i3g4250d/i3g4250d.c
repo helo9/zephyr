@@ -185,21 +185,15 @@ static int i3g4250d_init(const struct device *dev)
 		return -EIO;
 	}
 
-	/* Configure filtering chain -  Gyroscope - High Pass */
-	ret = i3g4250d_filter_path_set(i3g4250d->ctx, I3G4250D_LPF1_HP_ON_OUT);
+	/* Configure filtering chain -  Gyroscope */
+	ret = i3g4250d_filter_path_set(i3g4250d->ctx, I3G4250D_ONLY_LPF1_ON_OUT);
 	if (ret != 0) {
 		LOG_ERR("Failed setting filter path");
 		return ret;
 	}
 
-	ret = i3g4250d_hp_bandwidth_set(i3g4250d->ctx, I3G4250D_HP_LEVEL_3);
-	if (ret != 0) {
-		LOG_ERR("Failed setting high pass");
-		return ret;
-	}
-
 	/* Set Output data rate */
-	ret = i3g4250d_data_rate_set(i3g4250d->ctx, I3G4250D_ODR_100Hz);
+	ret = i3g4250d_data_rate_set(i3g4250d->ctx, I3G4250D_ODR_400Hz);
 	if (ret != 0) {
 		LOG_ERR("Failed setting data rate");
 		return ret;
