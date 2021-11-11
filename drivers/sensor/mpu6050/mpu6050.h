@@ -9,6 +9,7 @@
 
 #include <device.h>
 #include <drivers/gpio.h>
+#include <drivers/i2c.h>
 #include <sys/util.h>
 #include <zephyr/types.h>
 
@@ -70,8 +71,7 @@ struct mpu6050_data {
 };
 
 struct mpu6050_config {
-	const char *i2c_label;
-	uint16_t i2c_addr;
+	struct i2c_dt_spec i2c;
 #ifdef CONFIG_MPU6050_TRIGGER
 	uint8_t int_pin;
 	uint8_t int_flags;

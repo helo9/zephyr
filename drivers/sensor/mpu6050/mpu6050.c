@@ -116,8 +116,7 @@ static int mpu6050_sample_fetch(const struct device *dev,
 	const struct mpu6050_config *cfg = dev->config;
 	int16_t buf[7];
 
-	if (i2c_burst_read(drv_data->i2c, cfg->i2c_addr,
-			   MPU6050_REG_DATA_START, (uint8_t *)buf, 14) < 0) {
+	if (i2c_burst_read_dt(&cfg->i2c, MPU6050_REG_DATA_START, (uint8_t *)buf, 14) < 0) {
 		LOG_ERR("Failed to read data sample.");
 		return -EIO;
 	}
@@ -147,15 +146,14 @@ int mpu6050_init(const struct device *dev)
 	const struct mpu6050_config *cfg = dev->config;
 	uint8_t id, i;
 
-	drv_data->i2c = device_get_binding(cfg->i2c_label);
-	if (drv_data->i2c == NULL) {
+	if (!device_is_ready(cfg->i2c.bus)) {
 		LOG_ERR("Failed to get pointer to %s device",
-			    cfg->i2c_label);
-		return -EINVAL;
+			    cfg->i2c.bus->name);
+		return -ENODEV;
 	}
 
 	/* check chip ID */
-	if (i2c_reg_read_byte(drv_data->i2c, cfg->i2c_addr,
+	if (i2c_reg_read_byte_dt(&cfg->i2c,
 			      MPU6050_REG_CHIP_ID, &id) < 0) {
 		LOG_ERR("Failed to read chip ID.");
 		return -EIO;
@@ -163,11 +161,11 @@ int mpu6050_init(const struct device *dev)
 
 	if (id != MPU6050_CHIP_ID && id != MPU9250_CHIP_ID) {
 		LOG_ERR("Invalid chip ID.");
-		return -EINVAL;
+		return -EIO;
 	}
 
 	/* wake up chip */
-	if (i2c_reg_update_byte(drv_data->i2c, cfg->i2c_addr,
+	if (i2c_reg_update_byte_dt(&cfg->i2c,
 				MPU6050_REG_PWR_MGMT1, MPU6050_SLEEP_EN,
 				0) < 0) {
 		LOG_ERR("Failed to wake up chip.");
@@ -186,7 +184,7 @@ int mpu6050_init(const struct device *dev)
 		return -EINVAL;
 	}
 
-	if (i2c_reg_write_byte(drv_data->i2c, cfg->i2c_addr,
+	if (i2c_reg_write_byte_dt(&cfg->i2c,
 			       MPU6050_REG_ACCEL_CFG,
 			       i << MPU6050_ACCEL_FS_SHIFT) < 0) {
 		LOG_ERR("Failed to write accel full-scale range.");
@@ -207,7 +205,7 @@ int mpu6050_init(const struct device *dev)
 		return -EINVAL;
 	}
 
-	if (i2c_reg_write_byte(drv_data->i2c, cfg->i2c_addr,
+	if (i2c_reg_write_byte_dt(&cfg->i2c,
 			       MPU6050_REG_GYRO_CFG,
 			       i << MPU6050_GYRO_FS_SHIFT) < 0) {
 		LOG_ERR("Failed to write gyro full-scale range.");
@@ -226,18 +224,28 @@ int mpu6050_init(const struct device *dev)
 	return 0;
 }
 
-static struct mpu6050_data mpu6050_driver;
-static const struct mpu6050_config mpu6050_cfg = {
-	.i2c_label = DT_INST_BUS_LABEL(0),
-	.i2c_addr = DT_INST_REG_ADDR(0),
 #ifdef CONFIG_MPU6050_TRIGGER
-	.int_pin = DT_INST_GPIO_PIN(0, int_gpios),
-	.int_flags = DT_INST_GPIO_FLAGS(0, int_gpios),
-	.int_label = DT_INST_GPIO_LABEL(0, int_gpios),
-#endif /* CONFIG_MPU6050_TRIGGER */
-};
+#define MPU6050_TRIGGER_INIT(inst) \
+		.int_pin = DT_INST_GPIO_PIN(inst, int_gpios), \
+		.int_flags = DT_INST_GPIO_FLAGS(inst, int_gpios),	\
+		.int_label = DT_INST_GPIO_LABEL(inst, int_gpios),
+#else
+#define MPU650_TRIGGER_INIT(inst)
+#endif /* CONFIG_MPU6050_TRIGGER */		
 
-DEVICE_DT_INST_DEFINE(0, mpu6050_init, NULL,
-		    &mpu6050_driver, &mpu6050_cfg,
-		    POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY,
-		    &mpu6050_driver_api);
+#define MPU6050_DEVICE_INIT(inst)									\
+	static struct mpu6050_data mpu6050_driver_##inst;				\
+	static const struct mpu6050_config mpu6050_config_##inst = {	\
+		.i2c = I2C_DT_SPEC_INST_GET(inst),		\
+		MPU6050_TRIGGER_INIT(inst)	\
+	};														\
+	DEVICE_DT_INST_DEFINE(inst,										\
+				mpu6050_init,										\
+				NULL,												\
+				&mpu6050_driver_##inst,								\
+				&mpu6050_config_##inst,								\
+				POST_KERNEL,										\
+				CONFIG_SENSOR_INIT_PRIORITY,						\
+				&mpu6050_driver_api);
+
+DT_INST_FOREACH_STATUS_OKAY(MPU6050_DEVICE_INIT)
