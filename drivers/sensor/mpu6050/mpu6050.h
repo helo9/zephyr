@@ -9,9 +9,17 @@
 
 #include <device.h>
 #include <drivers/gpio.h>
-#include <drivers/i2c.h>
 #include <sys/util.h>
 #include <zephyr/types.h>
+
+#define DT_DRV_COMPAT invensense_mpu6050
+
+#if DT_ANY_INST_ON_BUS_STATUS_OKAY(i2c)
+#include <drivers/i2c.h>
+#endif /* DT_ANY_INST_ON_BUS_STATUS_OKAY(i2c) */
+#if DT_ANY_INST_ON_BUS_STATUS_OKAY(spi)
+#include <drivers/spi.h>
+#endif /* DT_ANY_INST_ON_BUS_STATUS_OKAY(spi) */
 
 #define MPU6050_REG_CHIP_ID		0x75
 #define MPU6050_CHIP_ID			0x68
@@ -71,7 +79,16 @@ struct mpu6050_data {
 };
 
 struct mpu6050_config {
-	struct i2c_dt_spec i2c;
+	union {
+#if DT_ANY_INST_ON_BUS_STATUS_OKAY(i2c)
+		struct i2c_dt_spec i2c;
+#else
+	#error JOJOJO
+#endif
+#if DT_ANY_INST_ON_BUS_STATUS_OKAY(spi)
+		struct spi_dt_spec spi;
+#endif
+	};
 #ifdef CONFIG_MPU6050_TRIGGER
 	uint8_t int_pin;
 	uint8_t int_flags;

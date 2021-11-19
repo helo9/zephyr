@@ -231,12 +231,20 @@ int mpu6050_init(const struct device *dev)
 		.int_label = DT_INST_GPIO_LABEL(inst, int_gpios),
 #else
 #define MPU650_TRIGGER_INIT(inst)
-#endif /* CONFIG_MPU6050_TRIGGER */		
+#endif /* CONFIG_MPU6050_TRIGGER */	
+
+#define MPU6050_CONFIG_I2C(inst) \
+	.i2c = I2C_DT_SPEC_INST_GET(inst),
+
+#define MPU6000_CONFIG_SPI(inst) \
+	.spi = SPI_DT_SPEC_INST_GET(inst),
 
 #define MPU6050_DEVICE_INIT(inst)									\
 	static struct mpu6050_data mpu6050_driver_##inst;				\
 	static const struct mpu6050_config mpu6050_config_##inst = {	\
-		.i2c = I2C_DT_SPEC_INST_GET(inst),		\
+		COND_CODE_1(DT_INST_ON_BUS(inst, i2c),	\
+			(MPU6050_CONFIG_I2C(inst)),		\
+			(MPU6000_CONFIG_SPI(inst)))\
 		MPU6050_TRIGGER_INIT(inst)	\
 	};														\
 	DEVICE_DT_INST_DEFINE(inst,										\
