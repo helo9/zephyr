@@ -11,6 +11,12 @@ properties:
     interrupts:
       required: true
 
+    half-duplex:
+      type: boolean
+      required: false
+      description: |
+        Use the half duplex single wire functionality
+
     pinctrl-0:
       type: phandles
       required: false

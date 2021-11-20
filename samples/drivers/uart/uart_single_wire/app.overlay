@@ -1,0 +1,13 @@
+/*
+ * Copyright (c) 2021 Jonathan Hahn
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&usart2 {
+	half-duplex;
+};
+
+&uart4 {
+	half-duplex;
+};
