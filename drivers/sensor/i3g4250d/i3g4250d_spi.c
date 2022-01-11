@@ -58,10 +58,10 @@ static int i3g4250d_spi_write(const struct device *dev, uint8_t reg,
 {
 	int ret;
 	const struct i3g4250d_device_config *config = dev->config;
-	uint8_t buffer_tx[2] = { reg | I3G4250D_SPI_WRITEM, 0 };
+	uint8_t buffer_tx = reg | I3G4250D_SPI_WRITEM;
 	const struct spi_buf tx_buf[2] = {
 		{
-			.buf = buffer_tx,
+			.buf = &buffer_tx,
 			.len = 1,
 		},
 		{
