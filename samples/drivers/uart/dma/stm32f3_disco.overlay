@@ -1,0 +1,9 @@
+&usart2 {
+    current-speed = < 100000 >;
+    dmas = <&dma1 1 0x0>;
+    dma-names = "tx";
+};
+
+&uart4 {
+    current-speed = < 100000 >;
+};
